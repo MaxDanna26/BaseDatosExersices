@@ -49,6 +49,11 @@ SELECT employees.first_name AS 'Nombre',
 jobs.job_title AS 'Cargo' FROM
 employees,jobs WHERE jobs.job_id = employees.job_id
 
+--Con INNERJOIN
+SELECT first_name, job_title
+FROM employees INNER JOIN jobs 
+ON employees.job_id=jobs.job_id
+
 --Empleados con su departamento y que trabajan en Toronto
 SELECT employees.first_name AS 'Nombre',
 departments.department_name AS 'Departamento',
@@ -57,4 +62,40 @@ FROM employees,departments,locations
 WHERE employees.department_id = departments.department_id
 AND departments.location_id = locations.location_id 
 AND locations.city = 'Toronto'
+
+--Empleados con su departamento y que trabajan en Toronto con INNERJOIN
+SELECT first_name, department_name,locations.location_id
+FROM employees 
+	INNER JOIN departments
+ON employees.department_id = departments.department_id
+	INNER JOIN locations ON departments.location_id = locations.location_id
+		AND locations.city = 'Toronto'
+
+--Empleados con su nombre del manager
+SELECT e.first_name, m.first_name
+FROM employees e
+INNER JOIN employees m 
+ON e.manager_id = m.employee_id
+
+-- CON INNER JOIN
+SELECT first_name, departments.department_id
+FROM employees INNER JOIN departments 
+ON employees.department_id=departments.department_id
+
+-- CON RIGHT JOIN
+SELECT first_name, departments.department_id
+FROM employees RIGHT JOIN departments 
+ON employees.department_id=departments.department_id
+
+-- CON LEFT JOIN
+SELECT first_name, departments.department_id
+FROM employees LEFT JOIN departments 
+ON employees.department_id=departments.department_id
+
+-- CON TOTAL JOIN
+SELECT first_name, departments.department_id
+FROM employees FULL OUTER JOIN departments 
+ON employees.department_id=departments.department_id
+
+
 
