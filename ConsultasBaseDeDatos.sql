@@ -1,4 +1,4 @@
-use DannaEmployees
+ï»¿use DannaEmployees
 GO
 
 -- Empleados con Nombres comenzados en S y salarios superior a 5000 y menos de 10000
@@ -16,7 +16,7 @@ SELECT * FROM employees WHERE Month(hire_date) = 01 OR Month(hire_date) = 04 OR 
 SELECT * FROM employees WHERE MONTH(hire_date) in (1,4,7,10)
 SELECT * FROM employees WHERE MONTH(hire_date) % 3 = 1 
 
--- Empleados contratados 25 años antes
+-- Empleados contratados 25 aï¿½os antes
 SELECT * FROM employees WHERE YEAR(hire_date) < (YEAR(GETDATE())-25)
 SELECT * FROM employees WHERE DATEDIFF(year,hire_date,GETDATE())>=25
 SELECT * FROM employees WHERE hire_date < '1998/01/01'
@@ -98,4 +98,32 @@ FROM employees FULL OUTER JOIN departments
 ON employees.department_id=departments.department_id
 
 
+-- nombre de emps con los hijos (dependents)
+
+
+-- nombre de emps con el pais
+SELECT first_name, departments.location_id,locations.country_id
+FROM employees 
+	INNER JOIN departments
+ON employees.department_id = departments.department_id
+	INNER JOIN locations 
+ON departments.location_id = locations.location_id
+  
+-- nombre de emps con dept y jobs
+SELECT first_name, job_title, department_name
+FROM employees 
+	INNER JOIN jobs 
+ON employees.job_id=jobs.job_id
+	INNER JOIN departments
+ON employees.department_id = departments.department_id
+
+-- nombre de emps con dept, jobs, city, etc
+SELECT first_name, job_title, department_name,locations.city
+FROM employees 
+	INNER JOIN jobs 
+ON employees.job_id=jobs.job_id
+	INNER JOIN departments
+ON employees.department_id = departments.department_id
+	INNER JOIN locations 
+ON departments.location_id = locations.location_id
 
