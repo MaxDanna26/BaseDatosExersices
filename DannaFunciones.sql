@@ -23,11 +23,11 @@ FROM departments
 -- 1- Función NombreDepartamento
 -- recibe idDept, devuelve Nombre del dept
 ALTER FUNCTION NomDepartamento(@id INT)
-RETURNS VARCHAR(20)
+RETURNS VARCHAR(30)
 AS
 BEGIN 
-DECLARE @resultado VARCHAR(20);
-SET @resultado = (SELECT departments.department_name FROM departments WHERE department_id = @id)
+DECLARE @resultado VARCHAR(30);
+SET @resultado = (SELECT department_name FROM departments WHERE department_id = @id)
 RETURN @resultado
 END
 
@@ -41,9 +41,10 @@ ALTER FUNCTION NumEmpsPosteriorA(@data date)
 RETURNS INT
 AS
 BEGIN 
-DECLARE @resultado INT;
-SET @resultado = (SELECT Count(*) FROM employees WHERE hire_date < @data)
-RETURN @resultado
+	DECLARE @resultado INT;
+	SET @resultado = (SELECT Count(*) 
+	FROM employees WHERE hire_date > @data)
+	RETURN @resultado
 END
 
 SELECT dbo.NumEmpsPosteriorA('2000-10-23')
@@ -53,18 +54,19 @@ SELECT dbo.NumEmpsPosteriorA('2000-10-23')
 
 -- recibe nombre ciudad, devuelve num de emps en esta ciudad
 
-CREATE FUNCTION NumEmpsCiudad(@Ciudad varchar(20))
+ALTER FUNCTION NumEmpsCiudad(@Ciudad varchar(20))
 RETURNS INT
 AS
 BEGIN 
 DECLARE @resultado INT;
 SET @resultado = (
-SELECT Count(*) AS EmpleadosPorCiudad FROM employees
-	INNER JOIN departments
-	ON employees.department_id = departments.department_id
-	INNER JOIN locations 
-ON departments.location_id = locations.location_id
-WHERE locations.city = @Ciudad
+	SELECT Count(*)
+	FROM employees E
+		INNER JOIN departments D
+		ON E.department_id = D.department_id
+		INNER JOIN locations L
+	ON D.location_id = L.location_id
+	WHERE L.city = @Ciudad
 )
 RETURN @resultado
 END
