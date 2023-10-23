@@ -45,3 +45,4 @@ END
 END
 
 SELECT dbo.ValorDeHoy(2)
+
