@@ -14,3 +14,4 @@ SELECT CONCAT(first_name,' ',last_name,'y su tel es ',phone_number) FROM employe
 
 SELECT CONCAT(first_name,' ',last_name,(SELECT ISNULL('y su tel es ' + phone_number,'y telefono no tiene'))) FROM employees
 
+SELECT COALESCE(phone_number,email,telex,fax,'No tiene NADA') FROM employees
