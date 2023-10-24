@@ -1,4 +1,5 @@
-
+use DannaEmployees
+GO
 
 ALTER FUNCTION FechaDeHoy
 ( 
