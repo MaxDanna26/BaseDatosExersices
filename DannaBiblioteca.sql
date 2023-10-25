@@ -82,3 +82,134 @@ INSERT INTO PrestamoPersona(FK_IdPrestamo, FK_IdPersona) VALUES
 	(3,4),
 	(4,5),
 	(5,6)
+
+CREATE TABLE Autor
+(IdAutor INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+Nombre	VARCHAR(30),
+Apellido VARCHAR(30))
+
+INSERT INTO Autor(Nombre, Apellido) VALUES
+('Alberto', 'Pérez'),
+('Maria', 'Rodriguez'),
+('Carlos', 'Gomez'),
+('Laura', 'Martinez'),
+('Roberto', 'Sanchez')
+
+CREATE TABLE Editorial
+(IdEditorial INT IDENTITY(1,1) NOT NULL,
+Nombre VARCHAR(50))
+
+INSERT INTO Editorial(Nombre) VALUES
+('Ediciones Imaginarias'),
+('Ediciones Misticas'),
+('Ediciones Creativas'),
+('Libros magicos'),
+('Editorial gastronomicas')
+
+UPDATE Libro
+SET Editorial = NULL
+
+UPDATE Libro
+SET Autor = NULL
+
+ALTER TABLE Libro
+ALTER COLUMN Autor int
+
+ALTER TABLE Libro
+ALTER COLUMN Autor int
+
+ALTER TABLE Libro
+ADD CONSTRAINT Autor FOREIGN KEY REFERENCES Autor(IdAutor) 
+
+ALTER TABLE Libro
+ADD CONSTRAINT Editorial FOREIGN KEY REFERENCES Editorial(IdEditorial) 
+
+
+-- Correccion editorial
+
+UPDATE Libro
+SET Editorial = 1 
+WHERE IdLibro = 1
+
+UPDATE Libro
+SET Editorial = 2 
+WHERE IdLibro = 2
+
+UPDATE Libro
+SET Editorial = 3 
+WHERE IdLibro = 3
+
+UPDATE Libro
+SET Editorial = 4 
+WHERE IdLibro = 4
+
+UPDATE Libro
+SET Editorial = 5 
+WHERE IdLibro = 5
+
+-- Correccion autor
+
+UPDATE Libro
+SET Autor = 1 
+WHERE IdLibro = 1
+
+UPDATE Libro
+SET Autor = 2
+WHERE IdLibro = 2
+
+UPDATE Libro
+SET Autor = 3
+WHERE IdLibro = 3
+
+UPDATE Libro
+SET Autor = 4
+WHERE IdLibro = 4
+
+UPDATE Libro
+SET Autor = 5
+WHERE IdLibro = 5
+
+-- Función para sacar cuantos libro se prestaron entre 2 fechas
+CREATE FUNCTION LibrosEntreFechas
+(@fechaUno date,
+@fechaDos date)
+RETURNS int
+AS
+BEGIN 
+	DECLARE @resultado int;
+	SET @resultado = (SELECT COUNT(*) FROM Prestamo WHERE FechaAlquiler BETWEEN @fechauno AND @fechados);
+	RETURN @resultado;
+END
+
+SELECT dbo.LibrosEntreFechas('2023-10-01','2023-12-01')
+
+-- SP para insertar un prestamo nuevo
+
+CREATE PROCEDURE NuevoPrestamo
+@FechaAlquiler DATE,
+@FechaTope DATE,
+@FechaDevolucion DATE,
+@IdPersona INT,
+@IdLibro INT
+AS
+BEGIN
+	INSERT INTO Prestamo(FechaAlquiler,FechaTope,FechaDevolucion) VALUES
+	(@FechaAlquiler,@FechaTope,@FechaDevolucion)
+
+	DECLARE @IdPrestamo int;
+    SET @IdPrestamo = SCOPE_IDENTITY();
+
+	INSERT INTO LibroPrestamo (FK_IdLibro,FK_IdPrestamo) VALUES
+	(@IdLibro, @IdPrestamo)
+
+	INSERT INTO PrestamoPersona (FK_IdPrestamo,FK_IdPersona) VALUES
+	(@IdPersona,@IdPrestamo)
+END
+
+EXEC NuevoPrestamo @FechaAlquiler = '2023-10-25', @FechaTope = DATEADD(DAY,15,@FechaAlquiler),
+@FechaDevolucion = '2023-11-01', @IdPersona = 2, @IdLibro = 2
+
+
+-- SP para marcar/quitar la marca 'Deteriorado' a todos los ejemplares de libros 
+
+--   de un autor, o de una editorial, o a un ejemplar concreto
