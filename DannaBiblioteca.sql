@@ -34,7 +34,7 @@ FK_IdPrestamo INT FOREIGN KEY REFERENCES Prestamo(IdPrestamo))
 CREATE TABLE Volumen
 (IdVolumen INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 FK_IdLibro INT FOREIGN KEY REFERENCES Libro(IdLibro),
-EsUtilizable BIT
+EsUtilizable VARCHAR(30)
 )
 
 CREATE TABLE PrestamoPersona
@@ -56,11 +56,11 @@ INSERT INTO Libro (Titulo, Editorial, AñoEscritura, Autor, AñoEdicion, IBSN) VAL
     ('Cocina del Mundo', 'Editorial Gastronómica', '2008-07-03', 'Roberto Sánchez', '2010-10-25', '97823458901');
 
 INSERT INTO Volumen (FK_IdLibro, EsUtilizable) VALUES
-    (1, 1),
-    (2, 1), 
-    (3, 1), 
-    (4, 1), 
-    (5, 0); 
+    (1, 'Es utilizable'),
+    (2, 'Es utilizable'), 
+    (3, 'Es utilizable'), 
+    (4, 'Deteriorado'), 
+    (5, 'Deteriorado'); 
 
 INSERT INTO Prestamo (FechaAlquiler, FechaTope, FechaDevolucion) VALUES
     ('2023-10-10', DATEADD(DAY,15,'2023-10-10'), '2023-10-20'), 
@@ -212,4 +212,142 @@ EXEC NuevoPrestamo @FechaAlquiler = '2023-10-25', @FechaTope = DATEADD(DAY,15,@F
 
 -- SP para marcar/quitar la marca 'Deteriorado' a todos los ejemplares de libros 
 
---   de un autor, o de una editorial, o a un ejemplar concreto
+ALTER PROCEDURE ModificarDeteriorado
+@Estado varchar(30)
+AS
+BEGIN
+
+IF @Estado = 'Quitar'
+UPDATE Volumen
+SET EsUtilizable = 'Es utilizable'
+WHERE EsUtilizable = 'Deteriorado'
+ELSE IF @Estado = 'Marcar'
+UPDATE Volumen
+SET EsUtilizable = 'Deteriorado'
+WHERE EsUtilizable = 'Es utilizable'
+        ELSE
+            PRINT 'Tipo de modificación no válido'
+
+END
+
+EXEC ModificarDeteriorado @Estado = 'Marcar'
+
+SELECT * FROM Volumen
+
+--   de un autor
+
+ALTER PROCEDURE ModificarDeterioradoporAutor
+@Estado varchar(30),
+@Id INT
+AS
+BEGIN
+
+IF @Estado = 'Quitar'
+UPDATE Volumen
+SET EsUtilizable = 'Es utilizable'
+FROM Volumen
+INNER JOIN Libro
+	ON FK_IdLibro = IdLibro
+WHERE Autor = @Id
+
+ELSE IF @Estado = 'Marcar'
+UPDATE Volumen
+SET EsUtilizable = 'Deteriorado'
+FROM Volumen
+INNER JOIN Libro
+	ON FK_IdLibro = IdLibro
+WHERE Autor = @Id
+        ELSE
+            PRINT 'Tipo de modificación no válido'
+
+END
+
+EXEC ModificarDeterioradoporAutor @Estado = 'Marcar',@Id = 2
+
+SELECT * FROM Volumen
+
+-- de una editorial
+
+
+ALTER PROCEDURE ModificarDeterioradoporEditorial
+@Estado varchar(30),
+@Id INT
+AS
+BEGIN
+
+IF @Estado = 'Quitar'
+UPDATE Volumen
+SET EsUtilizable = 'Es utilizable'
+FROM Volumen
+INNER JOIN Libro
+	ON FK_IdLibro = IdLibro
+WHERE Autor = @Id
+
+ELSE IF @Estado = 'Marcar'
+UPDATE Volumen
+SET EsUtilizable = 'Deteriorado'
+FROM Volumen
+INNER JOIN Libro
+	ON FK_IdLibro = IdLibro
+WHERE Editorial = @Id
+        ELSE
+            PRINT 'Tipo de modificación no válido'
+
+END
+
+
+EXEC ModificarDeterioradoporEditorial @Estado = 'Marcar',@Id = 2
+
+SELECT * FROM Volumen
+
+-- a un ejemplar concreto
+
+
+
+ALTER PROCEDURE ModificarDeterioradoporLibro
+@Estado varchar(30),
+@Id INT
+AS
+BEGIN
+
+IF @Estado = 'Quitar'
+UPDATE Volumen
+SET EsUtilizable = 'Es utilizable'
+FROM Volumen
+INNER JOIN Libro
+	ON FK_IdLibro = IdLibro
+WHERE IdLibro = @Id
+
+ELSE IF @Estado = 'Marcar'
+UPDATE Volumen
+SET EsUtilizable = 'Deteriorado'
+FROM Volumen
+INNER JOIN Libro
+	ON FK_IdLibro = IdLibro
+WHERE IdLibro = @Id
+        ELSE
+            PRINT 'Tipo de modificación no válido'
+
+END
+
+EXEC ModificarDeterioradoporLibro @Estado = 'Quitar',@Id = 3
+
+SELECT * FROM Volumen
+
+CREATE PROCEDURE ModificarDeterioradoCase
+@Estado varchar(30),
+@Id INT,
+@TipoModificacion varchar(30)
+AS
+BEGIN
+    CASE @TipoModificacion
+        WHEN 'Autor' THEN
+            EXEC ModificarDeterioradoporAutor @Estado, @Id
+        WHEN 'Editorial' THEN
+            EXEC ModificarDeterioradoporEditorial @Estado, @Id
+        WHEN 'Libro' THEN
+            EXEC ModificarDeterioradoporLibro @Estado, @Id
+        ELSE
+            PRINT 'Tipo de modificación no válido';
+    END
+END
