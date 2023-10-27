@@ -170,14 +170,16 @@ SET Autor = 5
 WHERE IdLibro = 5
 
 -- Función para sacar cuantos libro se prestaron entre 2 fechas
-CREATE FUNCTION LibrosEntreFechas
+ALTER FUNCTION LibrosEntreFechas
 (@fechaUno date,
 @fechaDos date)
-RETURNS int
+RETURNS INT
 AS
 BEGIN 
-	DECLARE @resultado int;
-	SET @resultado = (SELECT COUNT(*) FROM Prestamo WHERE FechaAlquiler BETWEEN @fechauno AND @fechados);
+	DECLARE @resultado INT;
+	SELECT @resultado = COUNT(*) 
+						FROM Prestamo
+						WHERE FechaAlquiler BETWEEN @fechauno AND @fechados
 	RETURN @resultado;
 END
 
@@ -213,26 +215,22 @@ EXEC NuevoPrestamo @FechaAlquiler = '2023-10-25', @FechaTope = DATEADD(DAY,15,@F
 -- SP para marcar/quitar la marca 'Deteriorado' a todos los ejemplares de libros 
 
 ALTER PROCEDURE ModificarDeteriorado
-@Estado varchar(30)
+@Estado INT
 AS
 BEGIN
 
-IF @Estado = 'Quitar'
+IF @Estado = 1
 UPDATE Volumen
-SET EsUtilizable = 'Es utilizable'
-WHERE EsUtilizable = 'Deteriorado'
-ELSE IF @Estado = 'Marcar'
+SET EsUtilizable = 1
+WHERE EsUtilizable = 0
+ELSE IF @Estado = 0
 UPDATE Volumen
-SET EsUtilizable = 'Deteriorado'
-WHERE EsUtilizable = 'Es utilizable'
-        ELSE
-            PRINT 'Tipo de modificación no válido'
+SET EsUtilizable = 0
+WHERE EsUtilizable = 1
 
 END
 
-EXEC ModificarDeteriorado @Estado = 'Marcar'
-
-SELECT * FROM Volumen
+EXEC ModificarDeteriorado @Estado = 0
 
 --   de un autor
 
@@ -257,17 +255,12 @@ FROM Volumen
 INNER JOIN Libro
 	ON FK_IdLibro = IdLibro
 WHERE Autor = @Id
-        ELSE
-            PRINT 'Tipo de modificación no válido'
 
 END
 
 EXEC ModificarDeterioradoporAutor @Estado = 'Marcar',@Id = 2
 
-SELECT * FROM Volumen
-
 -- de una editorial
-
 
 ALTER PROCEDURE ModificarDeterioradoporEditorial
 @Estado varchar(30),
@@ -290,19 +283,13 @@ FROM Volumen
 INNER JOIN Libro
 	ON FK_IdLibro = IdLibro
 WHERE Editorial = @Id
-        ELSE
-            PRINT 'Tipo de modificación no válido'
 
 END
 
 
 EXEC ModificarDeterioradoporEditorial @Estado = 'Marcar',@Id = 2
 
-SELECT * FROM Volumen
-
 -- a un ejemplar concreto
-
-
 
 ALTER PROCEDURE ModificarDeterioradoporLibro
 @Estado varchar(30),
@@ -325,29 +312,8 @@ FROM Volumen
 INNER JOIN Libro
 	ON FK_IdLibro = IdLibro
 WHERE IdLibro = @Id
-        ELSE
-            PRINT 'Tipo de modificación no válido'
 
 END
 
 EXEC ModificarDeterioradoporLibro @Estado = 'Quitar',@Id = 3
 
-SELECT * FROM Volumen
-
-CREATE PROCEDURE ModificarDeterioradoCase
-@Estado varchar(30),
-@Id INT,
-@TipoModificacion varchar(30)
-AS
-BEGIN
-    CASE @TipoModificacion
-        WHEN 'Autor' THEN
-            EXEC ModificarDeterioradoporAutor @Estado, @Id
-        WHEN 'Editorial' THEN
-            EXEC ModificarDeterioradoporEditorial @Estado, @Id
-        WHEN 'Libro' THEN
-            EXEC ModificarDeterioradoporLibro @Estado, @Id
-        ELSE
-            PRINT 'Tipo de modificación no válido';
-    END
-END
